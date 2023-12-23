@@ -1,3 +1,9 @@
+import css from './App.module.css'
+
+
+
+
+
 export const App = () => {
   return (
     <div
@@ -10,7 +16,7 @@ export const App = () => {
         color: '#010101'
       }}
     >
-      React homework template
+      Hello
     </div>
   );
 };
