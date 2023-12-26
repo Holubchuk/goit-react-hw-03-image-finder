@@ -25,23 +25,18 @@ export class App extends Component {
   featchPhotosByQuery = async (searchValue, page) => {
     try {
       this.setState({ status: STATUSES.pending });
-      const newPhotos = await requestPhotos(searchValue, page);
-      this.setState((prevState) => ({
-        photos: [...prevState.photos, ...newPhotos],
+      const { hits, totalHits } = await requestPhotos(searchValue, page);
+      this.setState(prevState => ({
+        photos: [...prevState.photos, ...hits],
         status: STATUSES.success,
-        onLoad: true,
-      })); 
-
+        onLoad: this.state.page < Math.ceil(totalHits / 12),
+      }));
     } catch (error) {
       this.setState({ status: STATUSES.error, error: error.message });
       Notiflix.Notify.failure(
         'Oops! Something went wrong. Please try again later'
       );
     }
-  };
-
-  onClickLodeMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -63,6 +58,10 @@ export class App extends Component {
     });
   };
 
+  handleLodeMore = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
+  };
+
   handleOpenModal = photoId => {
     const selectedPhoto = this.state.photos.find(photo => photo.id === photoId);
     this.setState({
@@ -75,23 +74,16 @@ export class App extends Component {
     this.setState({ isOpenModal: false });
   };
 
-  handleLoadMoreClick = () => {
-    this.featchPhotosByQuery(this.state.searchValue, this.state.page);
-  };
-
   render() {
     return (
       <div className={css.app}>
         <Searchbar handleSubmit={this.handleSubmit} />
+        <ImageGallery
+          photos={this.state.photos}
+          handleOpenModal={this.handleOpenModal}
+        />
         {this.state.status === STATUSES.pending && <Loader />}
-        {this.state.status === STATUSES.success && (
-          <ImageGallery
-            photos={this.state.photos}
-            handleOpenModal={this.handleOpenModal}
-          />
-        )}
-        {this.state.onLoad && <Button onClickLodeMore={this.onClickLodeMore}/>}
-
+        {this.state.onLoad && <Button handleLodeMore={this.handleLodeMore} />}
         {this.state.isOpenModal && (
           <Modal
             modalData={this.state.modalData}

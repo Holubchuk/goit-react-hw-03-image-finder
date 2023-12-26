@@ -15,6 +15,6 @@ export async function requestPhotos(searchValue, page) {
       page: page,
     };
 
-    const {data: {hits}} = await axios.get(BASE_URL, { params });
-    return hits;
+    const response = await axios.get(BASE_URL, { params });
+    return response.data;
 }
