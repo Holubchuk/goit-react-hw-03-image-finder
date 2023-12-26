@@ -21,11 +21,12 @@ export class App extends Component {
     modalData: null,
   };
 
-  featchPhotosByQuery = async (searchValue) => {
+  featchPhotosByQuery = async (searchValue, page) => {
     try {
       this.setState({ status: STATUSES.pending });
-      const photos = await requestPhotos(searchValue);
-      this.setState({photos, status: STATUSES.success})
+      const photos = await requestPhotos(searchValue, page);
+      const nextPage = this.state.page + 1;
+      this.setState({ photos, status: STATUSES.success, page: nextPage });
     } catch (error) {
       this.setState({ status: STATUSES.error, error: error.message });
       Notiflix.Notify.failure(
@@ -36,9 +37,10 @@ export class App extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (
-      prevState.searchValue !== this.state.searchValue
+      prevState.searchValue !== this.state.searchValue ||
+      prevState.page !== this.state.page
     ) {
-      this.featchPhotosByQuery(this.state.searchValue);
+      this.featchPhotosByQuery();
     }
   }
 
@@ -47,7 +49,7 @@ export class App extends Component {
 
     const searchValue = e.currentTarget.elements.search.value;
 
-    this.setState({ searchValue }, () => {
+    this.setState({ searchValue, page: 1 }, () => {
       e.target.reset();
     });
   };
