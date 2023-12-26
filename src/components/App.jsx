@@ -12,21 +12,26 @@ import { Modal } from './Modal/Modal';
 
 export class App extends Component {
   state = {
-    photos: null,
+    photos: [],
     status: STATUSES.idle,
     error: null,
     page: 1,
     searchValue: '',
     isOpenModal: false,
     modalData: null,
+    onLoad: false,
   };
 
   featchPhotosByQuery = async (searchValue, page) => {
     try {
       this.setState({ status: STATUSES.pending });
-      const photos = await requestPhotos(searchValue, page);
-      const nextPage = this.state.page + 1;
-      this.setState({ photos, status: STATUSES.success, page: nextPage });
+      const newPhotos = await requestPhotos(searchValue, page);
+      this.setState((prevState) => ({
+        photos: [...prevState.photos, ...newPhotos],
+        status: STATUSES.success,
+        onLoad: true,
+      })); 
+
     } catch (error) {
       this.setState({ status: STATUSES.error, error: error.message });
       Notiflix.Notify.failure(
@@ -35,12 +40,16 @@ export class App extends Component {
     }
   };
 
+  onClickLodeMore = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
+  };
+
   componentDidUpdate(prevProps, prevState) {
     if (
       prevState.searchValue !== this.state.searchValue ||
       prevState.page !== this.state.page
     ) {
-      this.featchPhotosByQuery();
+      this.featchPhotosByQuery(this.state.searchValue, this.state.page);
     }
   }
 
@@ -49,7 +58,7 @@ export class App extends Component {
 
     const searchValue = e.currentTarget.elements.search.value;
 
-    this.setState({ searchValue, page: 1 }, () => {
+    this.setState({ searchValue: searchValue, page: 1, photos: [] }, () => {
       e.target.reset();
     });
   };
@@ -81,7 +90,7 @@ export class App extends Component {
             handleOpenModal={this.handleOpenModal}
           />
         )}
-        <Button />
+        {this.state.onLoad && <Button onClickLodeMore={this.onClickLodeMore}/>}
 
         {this.state.isOpenModal && (
           <Modal
