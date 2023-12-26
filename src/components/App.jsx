@@ -28,7 +28,7 @@ export class App extends Component {
       this.setState(prevState => ({
         photos: photos,
         status: STATUSES.success,
-        page: prevState + 1,
+        page: prevState.page + 1,
       }));
     } catch (error) {
       this.setState({ status: STATUSES.error, error: error.message });
