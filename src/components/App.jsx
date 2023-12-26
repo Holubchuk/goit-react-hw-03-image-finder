@@ -21,15 +21,11 @@ export class App extends Component {
     modalData: null,
   };
 
-  featchPhotosByQuery = async (searchValue, page) => {
+  featchPhotosByQuery = async (searchValue) => {
     try {
       this.setState({ status: STATUSES.pending });
-      const photos = await requestPhotos(searchValue, page);
-      this.setState(prevState => ({
-        photos: photos,
-        status: STATUSES.success,
-        page: prevState.page + 1,
-      }));
+      const photos = await requestPhotos(searchValue);
+      this.setState({photos, status: STATUSES.success})
     } catch (error) {
       this.setState({ status: STATUSES.error, error: error.message });
       Notiflix.Notify.failure(
@@ -40,10 +36,9 @@ export class App extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (
-      prevState.searchValue !== this.state.searchValue ||
-      prevState.page !== this.state.page
+      prevState.searchValue !== this.state.searchValue
     ) {
-      this.featchPhotosByQuery(this.state.searchValue, this.state.page);
+      this.featchPhotosByQuery(this.state.searchValue);
     }
   }
 
@@ -84,7 +79,7 @@ export class App extends Component {
             handleOpenModal={this.handleOpenModal}
           />
         )}
-        <Button handleLoadMoreClick={this.handleLoadMoreClick} />
+        <Button />
 
         {this.state.isOpenModal && (
           <Modal
