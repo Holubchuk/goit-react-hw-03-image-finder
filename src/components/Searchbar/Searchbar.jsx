@@ -15,6 +15,8 @@ export const Searchbar = ({handleSubmit}) => {
         className={css.searchFormInput}
         name="search"
         type="text"
+        autoComplete="off"
+        autoFocus
         placeholder="Search images and photos"
         required
       />

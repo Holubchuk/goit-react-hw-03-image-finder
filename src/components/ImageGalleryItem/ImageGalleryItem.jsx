@@ -1,10 +1,18 @@
-import css from './ImageGalleryItem.module.css'
+import css from './ImageGalleryItem.module.css';
 
-
-export const ImageGalleryItem = ({webformatURL, tags}) => {
+export const ImageGalleryItem = ({
+  id,
+  webformatURL,
+  tags,
+  handleOpenModal,
+}) => {
   return (
-    <li className={css.imageGalleryItem} >
-    <img className={css.imageGalleryItemImage} src={webformatURL} alt={tags} />
-  </li>
-  )
-}
+    <li className={css.imageGalleryItem} onClick={() => handleOpenModal(id)}>
+      <img
+        className={css.imageGalleryItemImage}
+        src={webformatURL}
+        alt={tags}
+      />
+    </li>
+  );
+};

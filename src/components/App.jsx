@@ -6,7 +6,9 @@ import { requestPhotos } from 'services/api';
 import { STATUSES } from 'services/constants';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Searchbar } from './Searchbar/Searchbar';
+import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
+import { Modal } from './Modal/Modal';
 
 export class App extends Component {
   state = {
@@ -15,14 +17,19 @@ export class App extends Component {
     error: null,
     page: 1,
     searchValue: '',
-    selectedImage: null,
+    isOpenModal: false,
+    modalData: null,
   };
 
-  featchPhotosByQuery = async searchValue => {
+  featchPhotosByQuery = async (searchValue, page) => {
     try {
       this.setState({ status: STATUSES.pending });
-      const photos = await requestPhotos(searchValue);
-      this.setState({ photos, status: STATUSES.success });
+      const photos = await requestPhotos(searchValue, page);
+      this.setState(prevState => ({
+        photos: photos,
+        status: STATUSES.success,
+        page: prevState + 1,
+      }));
     } catch (error) {
       this.setState({ status: STATUSES.error, error: error.message });
       Notiflix.Notify.failure(
@@ -32,8 +39,11 @@ export class App extends Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.searchValue !== this.state.searchValue) {
-      this.featchPhotosByQuery(this.state.searchValue);
+    if (
+      prevState.searchValue !== this.state.searchValue ||
+      prevState.page !== this.state.page
+    ) {
+      this.featchPhotosByQuery(this.state.searchValue, this.state.page);
     }
   }
 
@@ -47,13 +57,40 @@ export class App extends Component {
     });
   };
 
+  handleOpenModal = photoId => {
+    const selectedPhoto = this.state.photos.find(photo => photo.id === photoId);
+    this.setState({
+      isOpenModal: true,
+      modalData: selectedPhoto,
+    });
+  };
+
+  handleCloseModal = () => {
+    this.setState({ isOpenModal: false });
+  };
+
+  handleLoadMoreClick = () => {
+    this.featchPhotosByQuery(this.state.searchValue, this.state.page);
+  };
+
   render() {
     return (
       <div className={css.app}>
         <Searchbar handleSubmit={this.handleSubmit} />
         {this.state.status === STATUSES.pending && <Loader />}
         {this.state.status === STATUSES.success && (
-          <ImageGallery photos={this.state.photos} />
+          <ImageGallery
+            photos={this.state.photos}
+            handleOpenModal={this.handleOpenModal}
+          />
+        )}
+        <Button handleLoadMoreClick={this.handleLoadMoreClick} />
+
+        {this.state.isOpenModal && (
+          <Modal
+            modalData={this.state.modalData}
+            handleCloseModal={this.handleCloseModal}
+          />
         )}
       </div>
     );
